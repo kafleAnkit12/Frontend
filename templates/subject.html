@@ -1,0 +1,105 @@
+<!-- take_attendance.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Take Attendance</title>
+</head>
+<body>
+    <h1>Take Attendance</h1>
+    <button id="use-camera-btn">Use Camera</button>
+    <input type="file" id="image-upload" accept="image/*" style="display: none;">
+    <canvas id="canvas" style="display: none;"></canvas>
+    <button id="capture-btn" style="display: none;">Capture Image</button>
+    <button id="upload-btn">Upload Image</button>
+    <script>
+        // Function to start camera
+        async function startCamera() {
+            const video = document.createElement('video');
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                video.play();
+                video.style.display = 'block';
+                document.body.appendChild(video);
+                document.getElementById('capture-btn').style.display = 'block';
+                document.getElementById('use-camera-btn').style.display = 'none';
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+            }
+        }
+
+        // Function to capture image from camera
+        // Function to capture image from camera
+function captureImage() {
+    const video = document.querySelector('video');
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    // Convert canvas image to data URL
+    const imageDataURL = canvas.toDataURL('image/png');
+    // Create a new Image element with the captured image
+    const capturedImage = new Image();
+    capturedImage.src = imageDataURL;
+    // Append the captured image to the document body or any other container
+    document.body.appendChild(capturedImage);
+}
+
+            
+            
+           
+            
+        
+            
+            
+        
+            // Send the image data to the server for processing
+            // Example: use fetch API to send image data to the server
+        
+
+        // Function to handle image upload
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const image = new Image();
+                    image.src = e.target.result;
+                    image.onload = function () {
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        canvas.width = image.width;
+                        canvas.height = image.height;
+                        context.drawImage(image, 0, 0);
+                        const imageData = canvas.toDataURL('image/png');
+                        console.log('Uploaded image:', imageData);
+                        // Send the image data to the server for processing
+                        // Example: use fetch API to send image data to the server
+                    };
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Event listener for "Use Camera" button click
+        document.getElementById('use-camera-btn').onclick = startCamera;
+
+        // Event listener for "Capture Image" button click
+        document.getElementById('capture-btn').onclick = captureImage;
+
+        // Event listener for "Upload Image" button click
+        document.getElementById('upload-btn').onclick = function () {
+            document.getElementById('image-upload').click();
+        };
+
+        // Event listener for file input change (image upload)
+        document.getElementById('image-upload').onchange = handleImageUpload;
+    </script>
+</body>
+</html>
