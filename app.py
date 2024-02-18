@@ -118,14 +118,67 @@ def view_report(subject_code):
 def take_attendance():
     return render_template('take_attendance.html')
 
-# Flask route to process the uploaded image
+from flask import Flask, render_template, url_for, redirect, flash, request, jsonify
+import os
+
+app.config['UPLOAD_FOLDER'] = 'data'  # Folder where uploaded images will be stored
+
+# Function to save the uploaded image file to the server
+def save_uploaded_image(image_data):
+    try:
+        # Decode the base64-encoded image data
+        image_data = image_data.split(',')[1]  # Remove the "data:image/png;base64," prefix
+        image_bytes = image_data.encode('utf-8')
+        with open(os.path.join(app.config['UPLOAD_FOLDER'], 'uploaded_image.png'), 'wb') as f:
+            f.write(image_bytes)
+        return True
+    except Exception as e:
+        print('Error saving uploaded image:', str(e))
+        return False
+
 @app.route('/process_image', methods=['POST'])
 def process_image():
-    if 'image' in request.files:
-        image_file = request.files['image']
-        # Process the image (perform face recognition, etc.)
-        # You'll need to implement this part using a face recognition library
-    return redirect(url_for('dashboard'))
+    try:
+        # Get the image data from the request JSON
+        image_data = request.json.get('image_data')
+        if image_data:
+            # Save the uploaded image to the server
+            if save_uploaded_image(image_data):
+                # Image was successfully saved
+                return jsonify({'success': True, 'message': 'Image uploaded successfully.'}), 200
+            else:
+                # Error occurred while saving the image
+                return jsonify({'success': False, 'message': 'Error uploading image.'}), 500
+        else:
+            # Image data not found in the request
+            return jsonify({'success': False, 'message': 'No image data found in the request.'}), 400
+    except Exception as e:
+        # Error occurred while processing the request
+        print('Error processing image:', str(e))
+        return jsonify({'success': False, 'message': 'Error processing image.'}), 500
+    
+import base64
+import uuid  # Import UUID module for generating unique filenames
+
+# Function to save the uploaded image file to the server
+def save_uploaded_image(image_data):
+    try:
+        # Decode the base64-encoded image data
+        image_data = image_data.split(',')[1]  # Remove the "data:image/png;base64," prefix
+        image_bytes = base64.b64decode(image_data)
+        
+        # Generate a unique filename for the image
+        image_filename = str(uuid.uuid4()) + '.png'
+
+        # Save the image data to a file with the unique filename
+        with open(os.path.join(app.config['UPLOAD_FOLDER'], image_filename), 'wb') as f:
+            f.write(image_bytes)
+        
+        return True, image_filename  # Return success status and the filename
+    except Exception as e:
+        print('Error saving uploaded image:', str(e))
+        return False, None
+
 
 
 if __name__ == '__main__':
